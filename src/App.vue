@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    {{ activePoke }}
     <nest-card class="card__field" v-for="(card, i) in game" :card="card" :key="i"></nest-card>
   </div>
 </template>
@@ -19,6 +20,11 @@ export default {
       ]  
     }
   },
+  computed: {
+    activePoke () {
+      return this.$store.state.activePoke
+    }
+  },
   methods: {
     makeCard (length, cardNumbers, deep = 0, upperCard) {
       let number = cardNumbers.shift()
@@ -35,18 +41,16 @@ export default {
     }
   },
   mounted () {
-    Math.floor(51 * Math.random())
     const numbers = Array.from({ length: 52 }, (v, i) => i)
     const rndNumbers = []
     for (let i = 0; i < 52; i++) {
-      let index = Math.floor((51 - i) * Math.random())
+      let index = Math.floor((52 - i) * Math.random())
       rndNumbers.push(...numbers.splice(index, 1))
     }
 
     for (let i = 2; i <= 9; i++) {
       this.game.push(this.makeCard(i, rndNumbers))
     }
-    console.log(this.game)
   }
 }
 </script>

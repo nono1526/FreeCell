@@ -1,5 +1,5 @@
 <template>
-  <draggable tag="ul" >
+  <draggable tag="ul" @start="dragstart" @end="dragend">
     <li>
       <v-card
         :style="setTransform()"
@@ -23,8 +23,14 @@ export default {
     card: Object
   },
   methods: {
+    dragstart (e) {
+      console.log(e)
+      this.$store.commit('setActivePoke', this.card)
+    },
+    dragend (e) {
+      console.log(e)
+    },
     setTransform () {
-      console.log(this.card.deep)
       if (this.card.deep !== 0) {
         return {
           transform: `translateY(${-143 * this.card.deep + 25 * this.card.deep}px)`
