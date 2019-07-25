@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <nest-card :card="cards"></nest-card>
+    <nest-card class="card__field" v-for="(card, i) in game" :card="card" :key="i"></nest-card>
   </div>
 </template>
 
@@ -14,20 +14,39 @@ export default {
   },
   data () {
     return {
-      cards: {
-        number: 1,
-        type: 'diamond',
-        next: {
-          number: 2,
-          type: 'diamond',
-          next: {
-            number: 3,
-            type: 'diamond',
-            next: null
-          }
-        }
-      }
+      game: [
+
+      ]  
     }
+  },
+  methods: {
+    makeCard (length, cardNumbers, deep = 0, upperCard) {
+      let number = cardNumbers.shift()
+      const nowCard = {
+        number,
+        deep,
+        next: null
+      }
+
+      if (length > deep) {
+        nowCard.next = this.makeCard(length, cardNumbers, deep + 1, nowCard)
+      }
+      return nowCard
+    }
+  },
+  mounted () {
+    Math.floor(51 * Math.random())
+    const numbers = Array.from({ length: 52 }, (v, i) => i)
+    const rndNumbers = []
+    for (let i = 0; i < 52; i++) {
+      let index = Math.floor((51 - i) * Math.random())
+      rndNumbers.push(...numbers.splice(index, 1))
+    }
+
+    for (let i = 2; i <= 9; i++) {
+      this.game.push(this.makeCard(i, rndNumbers))
+    }
+    console.log(this.game)
   }
 }
 </script>
@@ -39,4 +58,5 @@ html, body
   font-family 'Avenir', Helvetica, Arial, sans-serif
   -webkit-font-smoothing antialiased
   -moz-osx-font-smoothing grayscale
+  display flex
 </style>

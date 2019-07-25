@@ -2,9 +2,8 @@
   <draggable tag="ul" >
     <li>
       <v-card
-        :style="{transform:`translateY(-80px)`}"
-        :number="card.number"
-        :type="card.type">
+        :style="setTransform()"
+        :number="card.number">
       </v-card>
       <nest-card  v-if="card.next" :card="card.next"></nest-card>
     </li>
@@ -22,6 +21,16 @@ export default {
   },
   props: {
     card: Object
+  },
+  methods: {
+    setTransform () {
+      console.log(this.card.deep)
+      if (this.card.deep !== 0) {
+        return {
+          transform: `translateY(${-143 * this.card.deep + 25 * this.card.deep}px)`
+        }
+      }
+    }
   }
 
 }
