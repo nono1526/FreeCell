@@ -1,7 +1,16 @@
 <template>
   <div id="app">
-    {{ activePoke }}
-    <nest-card class="card__field" v-for="(card, i) in game" :card="card" :key="i"></nest-card>
+    <div class="card__field"
+      v-for="(cards, i) in game"
+      :key="i"
+      @dragover.prevent
+      @drop="drop(cards)"
+    >
+      <nest-card
+        :card="cards"
+        >
+      </nest-card>
+    </div>
   </div>
 </template>
 
@@ -15,9 +24,7 @@ export default {
   },
   data () {
     return {
-      game: [
-
-      ]  
+      game: []
     }
   },
   computed: {
@@ -26,12 +33,32 @@ export default {
     }
   },
   methods: {
-    makeCard (length, cardNumbers, deep = 0, upperCard) {
+    cardToNumbers (card) {
+      let next = []
+      if (card.next) {
+        next = this.cardToNumbers(card.next)
+      }
+      return [card.number, ...next]
+    },
+    drop (cards) {
+      const lastCard = this.findLastCard(cards)
+      const numbers = this.cardToNumbers(this.activePoke)
+      lastCard.next = this.makeCard(numbers.length + lastCard.deep, numbers, lastCard.deep + 1, lastCard)
+      // console.log(this.activePoke)
+    },
+    findLastCard (card) {
+      return card.next ? this.findLastCard(card.next) : card
+    },
+    makeCard (length, cardNumbers, deep = 0, upperCard = null) {
       let number = cardNumbers.shift()
+      console.log(deep)
       const nowCard = {
         number,
         deep,
-        next: null
+        next: null,
+        getBefore () {
+          return upperCard
+        }
       }
 
       if (length > deep) {
@@ -51,6 +78,7 @@ export default {
     for (let i = 2; i <= 9; i++) {
       this.game.push(this.makeCard(i, rndNumbers))
     }
+    console.log(this.game)
   }
 }
 </script>
@@ -63,4 +91,8 @@ html, body
   -webkit-font-smoothing antialiased
   -moz-osx-font-smoothing grayscale
   display flex
+.cards
+  display flex
+.dragging
+  opacity 1
 </style>

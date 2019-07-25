@@ -1,5 +1,13 @@
 <template>
-  <img :src="`/cards/${type}_${cardNumber}.png`">
+  <div
+    :style="{
+      backgroundImage: `url(/cards/${type}_${cardNumber}.png)`,
+      width: `92px`,
+      height: `143px`
+    }"
+  >
+
+  </div>
 </template>
 
 <script>
@@ -20,7 +28,3 @@ export default {
   }
 }
 </script>
-
-<style>
-
-</style>

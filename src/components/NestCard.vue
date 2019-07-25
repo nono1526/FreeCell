@@ -1,13 +1,18 @@
 <template>
-  <draggable tag="ul" @start="dragstart" @end="dragend">
+  <ul
+    :style="setTransform()"
+    draggable="true"
+    @dragstart.stop="dragstart"
+    @dragover.prevent
+    @dragend.stop="dragend"
+  >
     <li>
       <v-card
-        :style="setTransform()"
         :number="card.number">
       </v-card>
       <nest-card  v-if="card.next" :card="card.next"></nest-card>
     </li>
-  </draggable>
+  </ul>
 </template>
 
 <script>
@@ -24,16 +29,16 @@ export default {
   },
   methods: {
     dragstart (e) {
-      console.log(e)
       this.$store.commit('setActivePoke', this.card)
     },
     dragend (e) {
-      console.log(e)
+      console.log(this.card)
+      this.card.getBefore().next = null
     },
     setTransform () {
       if (this.card.deep !== 0) {
         return {
-          transform: `translateY(${-143 * this.card.deep + 25 * this.card.deep}px)`
+          marginTop: '-110px'
         }
       }
     }
@@ -44,7 +49,10 @@ export default {
 
 <style lang="stylus" scoped>
   ul
+    user-select none
     list-style none
     margin 0
     padding 0
+    li
+      user-select none
 </style>

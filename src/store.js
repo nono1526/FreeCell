@@ -10,7 +10,6 @@ export default new Vuex.Store({
   mutations: {
     setActivePoke (state, val) {
       state.activePoke = val
-      console.log(123)
     }
   },
   actions: {
