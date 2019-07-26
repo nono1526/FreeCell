@@ -1,4 +1,4 @@
-# solitaire
+# freecell
 
 ## Project setup
 ```
