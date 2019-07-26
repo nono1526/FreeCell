@@ -5,11 +5,11 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    activePoke: null
+    activePoker: null
   },
   mutations: {
-    setActivePoke (state, val) {
-      state.activePoke = val
+    setActivePoker (state, val) {
+      state.activePoker = val
     }
   },
   actions: {

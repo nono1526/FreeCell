@@ -11,7 +11,7 @@
 </template>
 
 <script>
-const TYPE_MAPPING = ['club', 'diamond', 'heart', 'spade']
+const TYPE_MAPPING = ['club', 'diamond', 'spade', 'heart']
 export default {
   name: 'v-card',
   props: {

@@ -1,10 +1,9 @@
 <template>
   <ul
     :style="setTransform()"
-    draggable="true"
+    :draggable="card.draggable()"
     @dragstart.stop="dragstart"
     @dragover.prevent
-    @dragend.stop="dragend"
   >
     <li>
       <v-card
@@ -16,24 +15,24 @@
 </template>
 
 <script>
-import draggable from 'vuedraggable'
 import VCard from './VCard'
 export default {
   name: 'nest-card',
   components: {
-    draggable,
     VCard
   },
   props: {
     card: Object
   },
   methods: {
-    dragstart (e) {
-      this.$store.commit('setActivePoke', this.card)
+    isSequence (card, upperCard = null) {
+      let number = this.card.number % 13 + 1
+      let upperNumber = upperCard ? upperCard.number % 13 + 1 : number + 1
+      if (!card.next) return upperNumber - number === 1
+      return upperNumber - number === 1 && this.isSequence(card.next, card)
     },
-    dragend (e) {
-      console.log(this.card)
-      this.card.getBefore().next = null
+    dragstart (e) {
+      this.$store.commit('setActivePoker', this.card)
     },
     setTransform () {
       if (this.card.deep !== 0) {
