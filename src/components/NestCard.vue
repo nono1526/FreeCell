@@ -37,7 +37,7 @@ export default {
     setTransform () {
       if (this.card.deep !== 0) {
         return {
-          marginTop: '-110px'
+          marginTop: '-105px'
         }
       }
     }
