@@ -35,10 +35,13 @@ export default {
       this.$store.commit('setActivePoker', this.card)
     },
     setTransform () {
-      if (this.card.deep !== 0) {
-        return {
-          marginTop: '-105px'
-        }
+      let marginTop = this.card.deep
+        ? this.card.finish
+          ? '-143px'
+          : '-105px'
+        : 0
+      return {
+        marginTop
       }
     }
   }

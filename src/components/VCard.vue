@@ -1,7 +1,7 @@
 <template>
   <div
     :style="{
-      backgroundImage: `url(/cards/${type}_${cardNumber}.png)`,
+      backgroundImage: `url(./cards/${type}_${cardNumber}.png)`,
       width: `92px`,
       height: `143px`
     }"

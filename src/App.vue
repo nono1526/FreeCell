@@ -8,17 +8,18 @@
           :key="i"
           :style="getCenterMargin(i)"
           :class="{
-            'slot__end': slot.number % 1000 < 4,
+            'slot__end': !!slot.type,
             'slot__temp': slot.number === 5566
           }"
           @dragover.prevent
-          @drop="drop"
+          @drop="drop(slot)"
         >
-
+          <nest-card
+            v-if="slot.next"
+            :card="slot.next"></nest-card>
         </div>
       </div>
       <div class="card__fields container">
-
         <div class="card__field"
           v-for="(cards, i) in game"
           :key="i"
@@ -32,9 +33,18 @@
                 v-if="cards.next"
                 :card="cards.next"
                 >
+
               </nest-card>
             </li>
           </ul>
+        </div>
+      </div>
+      <div class="bottom container">
+        <button class="btn mr-20" @click="initGame">Reset</button>
+        <button class="btn">Previous</button>
+        <div class="time">
+          <span class="mr-20">Time: </span>
+          <span>{{ time }}</span>
         </div>
       </div>
     </div>
@@ -43,6 +53,7 @@
 
 <script>
 import NestCard from './components/NestCard.vue'
+const TYPE_MAPPING = ['club', 'diamond', 'spade', 'heart']
 
 export default {
   name: 'app',
@@ -51,37 +62,25 @@ export default {
   },
   data () {
     return {
+      isWin: false,
+      timer: null,
+      counter: 0,
       game: [],
-      specialSlot: [{
-        number: 1000,
-        next: null
-      }, {
-        number: 1001,
-        next: null
-      }, {
-        number: 1002,
-        next: null
-      }, {
-        number: 1003,
-        next: null
-      }, {
-        number: 5566,
-        next: null
-      }, {
-        number: 5566,
-        next: null
-      }, {
-        number: 5566,
-        next: null
-      }, {
-        number: 5566,
-        next: null
-      }]
+      specialSlot: []
     }
   },
   computed: {
     activePoker () {
       return this.$store.state.activePoker
+    },
+    time () {
+      let time = this.counter * 1000
+      let hours = Math.floor(time / 1000 / 60 / 60)
+      time = time - hours * 1000 * 60 * 60
+      let minutes = Math.floor(time / 1000 / 60)
+      time = time - minutes * 1000 * 60
+      let sec = time / 1000
+      return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${sec < 10 ? '0' : ''}${sec}`
     }
   },
   methods: {
@@ -112,20 +111,72 @@ export default {
       if (diff !== 1) return false // 如果已經不照順序就直接回 false 不要繼續找了
       return upperNumber - number === 1 && this.isSequence(card.next, card)
     },
-    dropToFinish () {
+    dropOnSlot () {
 
     },
     drop (cards) {
+      if (cards.number === 5566) {
+        this.dropOnTemp(cards)
+        return
+      }
+      if (cards.type) {
+        this.dropOnEnd(cards)
+        return
+      }
       const fieldLastCard = this.findLastCard(cards)
       const numbers = this.cardToNumbers(this.activePoker)
       if (!this.isSequence(this.activePoker)) return
-      console.log('排序過關')
       if (!this.canLastNumberConnectUp(fieldLastCard.number, this.activePoker.number)) return
-      console.log('顏色過關')
       this.activePoker.getBefore().next = null
       let depth = numbers.length + fieldLastCard.deep
       let startDeep = fieldLastCard.deep + 1
       fieldLastCard.next = this.makeCard(depth, numbers, fieldLastCard, startDeep)
+    },
+    dropOnTemp (slot) {
+      // 已經被塞滿不能放啦
+      if (slot.next) return
+      // 下面還有卡的話不給放啦
+      if (this.activePoker.next) return
+      this.activePoker.getBefore().next = null
+      const tempCard = {
+        deep: 0,
+        number: this.activePoker.number,
+        next: null,
+        getBefore () {
+          return slot
+        },
+        draggable () {
+          return true
+        }
+      }
+      slot.next = tempCard
+    },
+    dropOnEnd (slot) {
+      if (this.activePoker.next) return
+      const type = Math.floor(this.activePoker.number / 13)
+      const lastCard = this.findLastCard(slot)
+      if (slot.type !== TYPE_MAPPING[type]) return
+      if (lastCard.number + 1 !== this.activePoker.number) return
+      lastCard.next = {
+        number: this.activePoker.number,
+        deep: lastCard.deep + 1,
+        next: null,
+        getBefore () {
+          return lastCard
+        },
+        draggable () {
+          return false
+        },
+        finish: true
+      }
+      this.activePoker.getBefore().next = null
+      this.isWin = this.specialSlot
+        .filter(slot => slot.type)
+        .every(slot => {
+          let last = this.findLastCard(slot)
+          return last.number % 13 + 1 === 13
+        })
+      if (this.isWin) window.clearInterval(this.timer)
     },
     findLastCard (card) {
       return card.next ? this.findLastCard(card.next) : card
@@ -151,25 +202,67 @@ export default {
         nowCard.next = this.makeCard(depth, cardNumbers, nowCard, deep + 1)
       }
       return nowCard
+    },
+    initGame () {
+      this.game = []
+      this.counter = 0
+      this.specialSlot = [{
+        number: 0 - 1,
+        deep: -1,
+        type: 'club',
+        next: null
+      }, {
+        number: 39 - 1,
+        deep: -1,
+        type: 'heart',
+        next: null
+      }, {
+        number: 13 - 1,
+        deep: -1,
+        type: 'diamond',
+        next: null
+      }, {
+        number: 26 - 1,
+        deep: -1,
+        type: 'spade',
+        next: null
+      }, {
+        number: 5566,
+        next: null
+      }, {
+        number: 5566,
+        next: null
+      }, {
+        number: 5566,
+        next: null
+      }, {
+        number: 5566,
+        next: null
+      }]
+      const numbers = Array.from({ length: 52 }, (v, i) => i)
+      const rndNumbers = []
+      for (let i = 0; i < 52; i++) {
+        let index = Math.floor((52 - i) * Math.random())
+        rndNumbers.push(...numbers.splice(index, 1))
+      }
+      for (let i = 0; i < 8; i++) {
+        let length = i < 4 ? 5 : 6
+        const cardSlot = {
+          deep: -1,
+          next: null,
+          number: 999
+        }
+        cardSlot.next = this.makeCard(length, rndNumbers, cardSlot)
+        this.game.push(cardSlot)
+      }
+      window.clearInterval(this.timer)
+      this.timer = window.setInterval(() => {
+        this.counter++
+      }, 1000)
     }
   },
   mounted () {
-    const numbers = Array.from({ length: 52 }, (v, i) => i)
-    const rndNumbers = []
-    for (let i = 0; i < 52; i++) {
-      let index = Math.floor((52 - i) * Math.random())
-      rndNumbers.push(...numbers.splice(index, 1))
-    }
-    for (let i = 2; i <= 9; i++) {
-      const cardSlot = {
-        deep: -1,
-        next: null,
-        number: 999
-      }
-      cardSlot.next = this.makeCard(i, rndNumbers, cardSlot)
-      this.game.push(cardSlot)
-    }
-    console.log(this.game)
+    this.initGame()
   }
 }
 </script>
@@ -180,7 +273,7 @@ html, body
   height 100%
   width 100%
 #app
-  font-family 'Avenir', Helvetica, Arial, sans-serif
+  font-family 'DM Serif Display', 'Avenir', Helvetica, Arial, sans-serif
   -webkit-font-smoothing antialiased
   -moz-osx-font-smoothing grayscale
   display flex
@@ -191,7 +284,7 @@ html, body
 .card
   display flex
   width 1200px
-  height 80vh
+  height 90vh
   margin-top 5vh
   background-color #262525
   box-shadow 0 2px 10px 0 rgba(0,0,0,.2)
@@ -208,7 +301,6 @@ html, body
     position absolute
     top -78%
     left -16.7%
-    // transform translateX(50%)
     border-radius 50%
     z-index 0
   &:after
@@ -219,7 +311,6 @@ html, body
     position absolute
     top -77%
     left -16.7%
-    // transform translateX(50%)
     border-radius 50%
     z-index 0
 
@@ -234,6 +325,7 @@ html, body
 .dragging
   opacity 1
 .special__field
+  height auto
   margin-top 80px
   .slot__end
     border 1px solid #A99A7B
@@ -241,17 +333,37 @@ html, body
   .slot__temp
     border 1px solid #A6A5A5
     background-color #262525
+.bottom
+  margin-bottom 30px
+  margin-top auto
+  display flex
+  align-items center
+  .time
+    margin-right 20px
+    margin-left auto
+    color #D8C69A
+    font-size 23px
 .card__fields
   margin-top 40px
 .card__slot
   list-style none
-  border 1px solid rgba(#eaeaea, 0.3)
   width 92px
-  box-sizing border-box
-  height 141px
+  height 143px
   margin 0
   padding 0
   background-color transparent
   border-radius 5px
-
+.btn
+  font-family 'DM Serif Display'
+  background-color #161616
+  border none
+  font-size 18px
+  border-radius 25px
+  padding 10px
+  min-width 106px
+  color #D8C69A
+  outline none
+  cursor pointer
+.mr-20
+  margin-right 20px
 </style>
