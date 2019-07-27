@@ -6,7 +6,9 @@
           class="card__slot"
           v-for="(slot, i) in specialSlot"
           :key="i"
-          :style="getCenterMargin(i)"
+          :style="Object.assign({}, getCenterMargin(i), {
+            backgroundImage: `url(./${slot.type}_index.png)`
+          })"
           :class="{
             'slot__end': !!slot.type,
             'slot__temp': slot.number === 5566
@@ -33,7 +35,6 @@
                 v-if="cards.next"
                 :card="cards.next"
                 >
-
               </nest-card>
             </li>
           </ul>
@@ -41,7 +42,7 @@
       </div>
       <div class="bottom container">
         <button class="btn mr-20" @click="initGame">Reset</button>
-        <button class="btn">Previous</button>
+        <button class="btn"><img class="icon" src="../public/previous_icon.png">Previous</button>
         <div class="time">
           <span class="mr-20">Time: </span>
           <span>{{ time }}</span>
@@ -330,6 +331,8 @@ html, body
   .slot__end
     border 1px solid #A99A7B
     background-color rgba(#655F50, 0.2)
+    background-position center center
+    background-repeat no-repeat
   .slot__temp
     border 1px solid #A6A5A5
     background-color #262525
@@ -354,6 +357,8 @@ html, body
   background-color transparent
   border-radius 5px
 .btn
+  display flex
+  align-items center
   font-family 'DM Serif Display'
   background-color #161616
   border none
@@ -366,4 +371,6 @@ html, body
   cursor pointer
 .mr-20
   margin-right 20px
+.icon
+  margin-right 8px
 </style>
