@@ -112,9 +112,7 @@ export default {
       if (diff !== 1) return false // 如果已經不照順序就直接回 false 不要繼續找了
       return upperNumber - number === 1 && this.isSequence(card.next, card)
     },
-    dropOnSlot () {
 
-    },
     drop (cards) {
       if (cards.number === 5566) {
         this.dropOnTemp(cards)
@@ -358,6 +356,7 @@ html, body
   border-radius 5px
 .btn
   display flex
+  justify-content center
   align-items center
   font-family 'DM Serif Display'
   background-color #161616
