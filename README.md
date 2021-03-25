@@ -1,29 +1,11 @@
 # freecell
+前端精神時光屋作品  
 
-## Project setup
-```
-npm install
-```
+![](https://i.imgur.com/CsTfCIn.png)
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## source
+[設計稿連結](https://z7x2c0v0b8.github.io/the_f2e_2nd/freecell.html)
+Design By edith.hsu
 
-### Compiles and minifies for production
-```
-npm run build
-```
 
-### Run your tests
-```
-npm run test
-```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
