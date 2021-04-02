@@ -11,7 +11,7 @@
           })"
           :class="{
             'slot__end': !!slot.type,
-            'slot__temp': slot.number === 5566
+            'slot__temp': slot.number === TEMP_SLOT
           }"
           @dragover.prevent
           @drop="drop(slot)"
@@ -42,7 +42,7 @@
       </div>
       <div class="bottom container">
         <button class="btn mr-20" @click="initGame">Reset</button>
-        <button class="btn"><img class="icon" src="../public/previous_icon.png">Previous</button>
+        <button class="btn" @click="previous"><img class="icon" src="../public/previous_icon.png">Previous</button>
         <div class="time">
           <span class="mr-20">Time: </span>
           <span>{{ time }}</span>
@@ -54,6 +54,8 @@
 
 <script>
 import NestCard from './components/NestCard.vue'
+
+const TEMP_SLOT = 5566
 const TYPE_MAPPING = ['club', 'diamond', 'spade', 'heart']
 
 export default {
@@ -67,7 +69,8 @@ export default {
       timer: null,
       counter: 0,
       game: [],
-      specialSlot: []
+      specialSlot: [],
+      TEMP_SLOT
     }
   },
   computed: {
@@ -85,6 +88,9 @@ export default {
     }
   },
   methods: {
+    previous () {
+
+    },
     getCenterMargin (i) {
       return {
         marginRight: i === 3 ? `75px` : 0
@@ -114,7 +120,7 @@ export default {
     },
 
     drop (cards) {
-      if (cards.number === 5566) {
+      if (cards.number === TEMP_SLOT) {
         this.dropOnTemp(cards)
         return
       }
@@ -226,16 +232,16 @@ export default {
         type: 'spade',
         next: null
       }, {
-        number: 5566,
+        number: TEMP_SLOT,
         next: null
       }, {
-        number: 5566,
+        number: TEMP_SLOT,
         next: null
       }, {
-        number: 5566,
+        number: TEMP_SLOT,
         next: null
       }, {
-        number: 5566,
+        number: TEMP_SLOT,
         next: null
       }]
       const numbers = Array.from({ length: 52 }, (v, i) => i)
