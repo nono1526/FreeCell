@@ -19,8 +19,7 @@ const TYPE_MAPPING = ['club', 'diamond', 'spade', 'heart']
 export default {
   name: 'v-card',
   props: {
-    number: [String, Number],
-    deep: Number
+    number: [String, Number]
   },
   computed: {
     type () {
