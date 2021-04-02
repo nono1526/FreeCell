@@ -133,7 +133,6 @@ export default {
         return
       }
       const fieldLastCard = this.findLastCard(cards)
-      // const numbers = this.cardToNumbers(poker)
       if (!previousMode) {
         if (!this.isSequence(poker)) return
         if (!this.canLastNumberConnectUp(fieldLastCard.number, poker.number)) return
@@ -141,11 +140,8 @@ export default {
       const previousPoker = poker.previous
       console.log('before card number', previousPoker, previousPoker.number)
       previousPoker.next = null
-      // let depth = numbers.length + fieldLastCard.deep
-      // let startDeep = fieldLastCard.deep + 1
-      // 這邊建新的卡，可改成直接移動？
-      // fieldLastCard.next = this.makeCard(depth, numbers, fieldLastCard, startDeep)
       fieldLastCard.next = poker
+      poker.previous = fieldLastCard
       !previousMode && this.gameStep.push([previousPoker, poker])
     },
     dropOnTemp (slot, poker) {
