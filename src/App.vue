@@ -14,7 +14,7 @@
             'slot__temp': slot.number === TEMP_SLOT
           }"
           @dragover.prevent
-          @drop="drop(slot)"
+          @drop="drop(slot, activePoker)"
         >
           <nest-card
             v-if="slot.next"
@@ -26,7 +26,7 @@
           v-for="(cards, i) in game"
           :key="i"
           @dragover.prevent
-          @drop="drop(cards)"
+          @drop="drop(cards, activePoker)"
           :style="getCenterMargin(i)"
         >
           <ul class="card__slot">
@@ -42,7 +42,7 @@
       </div>
       <div class="bottom container">
         <button class="btn mr-20" @click="initGame">Reset</button>
-        <button class="btn" @click="previous"><img class="icon" src="../public/previous_icon.png">Previous</button>
+        <button class="btn" @click="goPrevious"><img class="icon" src="../public/previous_icon.png">Previous</button>
         <div class="time">
           <span class="mr-20">Time: </span>
           <span>{{ time }}</span>
@@ -70,7 +70,8 @@ export default {
       counter: 0,
       game: [],
       specialSlot: [],
-      TEMP_SLOT
+      TEMP_SLOT,
+      gameStep: []
     }
   },
   computed: {
@@ -88,8 +89,11 @@ export default {
     }
   },
   methods: {
-    previous () {
-
+    goPrevious () {
+      if (this.gameStep.length <= 0) return
+      const [previousPoker, poker] = this.gameStep.pop()
+      console.log(previousPoker, poker)
+      this.drop(previousPoker, poker, true)
     },
     getCenterMargin (i) {
       return {
@@ -119,62 +123,65 @@ export default {
       return upperNumber - number === 1 && this.isSequence(card.next, card)
     },
 
-    drop (cards) {
+    drop (cards, poker, previousMode = false) {
       if (cards.number === TEMP_SLOT) {
-        this.dropOnTemp(cards)
+        this.dropOnTemp(cards, poker)
         return
       }
       if (cards.type) {
-        this.dropOnEnd(cards)
+        this.dropOnEnd(cards, poker)
         return
       }
       const fieldLastCard = this.findLastCard(cards)
-      const numbers = this.cardToNumbers(this.activePoker)
-      if (!this.isSequence(this.activePoker)) return
-      if (!this.canLastNumberConnectUp(fieldLastCard.number, this.activePoker.number)) return
-      this.activePoker.getBefore().next = null
-      let depth = numbers.length + fieldLastCard.deep
-      let startDeep = fieldLastCard.deep + 1
-      fieldLastCard.next = this.makeCard(depth, numbers, fieldLastCard, startDeep)
+      // const numbers = this.cardToNumbers(poker)
+      if (!previousMode) {
+        if (!this.isSequence(poker)) return
+        if (!this.canLastNumberConnectUp(fieldLastCard.number, poker.number)) return
+      }
+      const previousPoker = poker.previous
+      console.log('before card number', previousPoker, previousPoker.number)
+      previousPoker.next = null
+      // let depth = numbers.length + fieldLastCard.deep
+      // let startDeep = fieldLastCard.deep + 1
+      // 這邊建新的卡，可改成直接移動？
+      // fieldLastCard.next = this.makeCard(depth, numbers, fieldLastCard, startDeep)
+      fieldLastCard.next = poker
+      !previousMode && this.gameStep.push([previousPoker, poker])
     },
-    dropOnTemp (slot) {
+    dropOnTemp (slot, poker) {
       // 已經被塞滿不能放啦
       if (slot.next) return
       // 下面還有卡的話不給放啦
-      if (this.activePoker.next) return
-      this.activePoker.getBefore().next = null
+      if (poker.next) return
+      poker.previous.next = null
       const tempCard = {
         deep: 0,
-        number: this.activePoker.number,
+        number: poker.number,
         next: null,
-        getBefore () {
-          return slot
-        },
+        previous: slot,
         draggable () {
           return true
         }
       }
       slot.next = tempCard
     },
-    dropOnEnd (slot) {
-      if (this.activePoker.next) return
-      const type = Math.floor(this.activePoker.number / 13)
+    dropOnEnd (slot, poker) {
+      if (poker.next) return
+      const type = Math.floor(poker.number / 13)
       const lastCard = this.findLastCard(slot)
       if (slot.type !== TYPE_MAPPING[type]) return
-      if (lastCard.number + 1 !== this.activePoker.number) return
+      if (lastCard.number + 1 !== poker.number) return
       lastCard.next = {
-        number: this.activePoker.number,
+        number: poker.number,
         deep: lastCard.deep + 1,
         next: null,
-        getBefore () {
-          return lastCard
-        },
+        previous: lastCard,
         draggable () {
           return false
         },
         finish: true
       }
-      this.activePoker.getBefore().next = null
+      poker.previous.next = null
       this.isWin = this.specialSlot
         .filter(slot => slot.type)
         .every(slot => {
@@ -192,9 +199,7 @@ export default {
         number,
         deep,
         next: null,
-        getBefore () {
-          return upperCard
-        }
+        previous: upperCard
       }
       // @todo 須確認此做法不會影響效能
       // 把計算接下來的排是否依照數字順序排序
