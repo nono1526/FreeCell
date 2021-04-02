@@ -54,7 +54,6 @@
 
 <script>
 import NestCard from './components/NestCard.vue'
-
 const TEMP_SLOT = 5566
 const TYPE_MAPPING = ['club', 'diamond', 'spade', 'heart']
 
@@ -92,7 +91,6 @@ export default {
     goPrevious () {
       if (this.gameStep.length <= 0) return
       const [previousPoker, poker] = this.gameStep.pop()
-      console.log(previousPoker, poker)
       this.drop(previousPoker, poker, true)
     },
     getCenterMargin (i) {
@@ -124,42 +122,47 @@ export default {
     },
 
     drop (cards, poker, previousMode = false) {
-      if (cards.number === TEMP_SLOT) {
-        this.dropOnTemp(cards, poker)
-        return
-      }
-      if (cards.type) {
-        this.dropOnEnd(cards, poker)
-        return
-      }
       const fieldLastCard = this.findLastCard(cards)
+
+      const previousPoker = poker.previous
+      poker.finish = false
       if (!previousMode) {
+        if (cards.number === TEMP_SLOT) {
+          this.dropOnTemp(cards, poker)
+          return
+        }
+        if (cards.type) {
+          this.dropOnEnd(cards, poker)
+          return
+        }
         if (!this.isSequence(poker)) return
         if (!this.canLastNumberConnectUp(fieldLastCard.number, poker.number)) return
+        this.gameStep.push([previousPoker, poker])
       }
-      const previousPoker = poker.previous
-      console.log('before card number', previousPoker, previousPoker.number)
       previousPoker.next = null
       fieldLastCard.next = poker
+
       poker.previous = fieldLastCard
-      !previousMode && this.gameStep.push([previousPoker, poker])
+      this.writeCardsDeep(poker)
+    },
+    writeCardsDeep (poker) {
+      poker.deep = poker.previous.deep + 1
+      if (poker.next === null) return
+      this.writeCardsDeep(poker.next)
     },
     dropOnTemp (slot, poker) {
       // 已經被塞滿不能放啦
       if (slot.next) return
       // 下面還有卡的話不給放啦
       if (poker.next) return
+      this.gameStep.push([poker.previous, poker])
       poker.previous.next = null
-      const tempCard = {
-        deep: 0,
-        number: poker.number,
-        next: null,
-        previous: slot,
-        draggable () {
-          return true
-        }
+      poker.deep = 0
+      poker.previous = slot
+      poker.draggable = function () {
+        return true
       }
-      slot.next = tempCard
+      slot.next = poker
     },
     dropOnEnd (slot, poker) {
       if (poker.next) return
@@ -167,17 +170,18 @@ export default {
       const lastCard = this.findLastCard(slot)
       if (slot.type !== TYPE_MAPPING[type]) return
       if (lastCard.number + 1 !== poker.number) return
-      lastCard.next = {
-        number: poker.number,
-        deep: lastCard.deep + 1,
-        next: null,
-        previous: lastCard,
-        draggable () {
-          return false
-        },
-        finish: true
-      }
+      this.gameStep.push([poker.previous, poker])
+
       poker.previous.next = null
+
+      poker.deep = lastCard.deep + 1
+      poker.next = null
+      poker.previous = lastCard
+      poker.draggable = function () {
+        return true
+      }
+      poker.finish = true
+      lastCard.next = poker
       this.isWin = this.specialSlot
         .filter(slot => slot.type)
         .every(slot => {
@@ -195,7 +199,8 @@ export default {
         number,
         deep,
         next: null,
-        previous: upperCard
+        previous: upperCard,
+        finish: false
       }
       // @todo 須確認此做法不會影響效能
       // 把計算接下來的排是否依照數字順序排序

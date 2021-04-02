@@ -7,6 +7,7 @@
   >
     <li>
       <v-card
+        :deep="card.deep"
         :number="card.number">
       </v-card>
       <nest-card  v-if="card.next" :card="card.next"></nest-card>

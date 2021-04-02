@@ -3,10 +3,14 @@
     :style="{
       backgroundImage: `url(./cards/${type}_${cardNumber}.png)`,
       width: `92px`,
-      height: `143px`
+      height: `143px`,
+      position: 'relative'
     }"
   >
-
+    <div :style="{
+      position: 'absolute',
+      color: 'white'
+    }">{{deep}}</div>
   </div>
 </template>
 
@@ -15,7 +19,8 @@ const TYPE_MAPPING = ['club', 'diamond', 'spade', 'heart']
 export default {
   name: 'v-card',
   props: {
-    number: [String, Number]
+    number: [String, Number],
+    deep: Number
   },
   computed: {
     type () {
